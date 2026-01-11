@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
     Dialog,
     DialogContent,
@@ -20,25 +20,26 @@ import {
     Filter,
     Grid3X3,
     List,
-    MoreVertical,
     FileText,
     Presentation,
     Clock,
     Eye,
     Pencil,
-    Trash2,
-    Download,
-    Copy
+    MoreVertical
 } from "lucide-react"
+import Link from "next/link"
 
-// Mock data
-const mockProjects = [
-    { id: "1", name: "Relatório Financeiro Q4 2025", type: "PDF", status: "DRAFT", updatedAt: "2026-01-09T15:30:00", pages: 12 },
-    { id: "2", name: "Pitch Deck Startup", type: "SLIDE", status: "PUBLISHED", updatedAt: "2026-01-08T10:00:00", pages: 15 },
-    { id: "3", name: "E-book Marketing Digital", type: "PDF", status: "REVIEW", updatedAt: "2026-01-07T14:00:00", pages: 45 },
-    { id: "4", name: "Apresentação Comercial", type: "SLIDE", status: "DRAFT", updatedAt: "2026-01-06T09:00:00", pages: 20 },
-    { id: "5", name: "Manual do Usuário", type: "PDF", status: "PUBLISHED", updatedAt: "2026-01-05T11:30:00", pages: 32 },
-    { id: "6", name: "Onboarding Slides", type: "SLIDE", status: "REVIEW", updatedAt: "2026-01-04T16:00:00", pages: 10 },
+// Projects data
+const projects = [
+    {
+        id: "consorcio-financiamento",
+        name: "Consórcio, Financiamento e À Vista",
+        type: "SLIDE",
+        status: "DRAFT",
+        updatedAt: "Agora",
+        pages: 11,
+        template: "Dotless Premium"
+    }
 ]
 
 const getStatusBadge = (status: string) => {
@@ -50,25 +51,13 @@ const getStatusBadge = (status: string) => {
     }
 }
 
-const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - date.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) return "Hoje"
-    if (diffDays === 1) return "Ontem"
-    if (diffDays < 7) return `${diffDays} dias atrás`
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
-}
-
 export default function ProjectsPage() {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
     const [searchQuery, setSearchQuery] = useState("")
     const [filterType, setFilterType] = useState<"all" | "PDF" | "SLIDE">("all")
     const [isNewProjectOpen, setIsNewProjectOpen] = useState(false)
 
-    const filteredProjects = mockProjects.filter(project => {
+    const filteredProjects = projects.filter(project => {
         const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase())
         const matchesType = filterType === "all" || project.type === filterType
         return matchesSearch && matchesType
@@ -133,102 +122,104 @@ export default function ProjectsPage() {
                     </div>
                 </div>
 
-                {/* Projects Grid/List */}
-                {viewMode === "grid" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {filteredProjects.map((project) => (
-                            <Card key={project.id} hover className="group overflow-hidden">
-                                {/* Preview */}
-                                <div className={`aspect-[4/3] relative ${project.type === "PDF" ? "bg-gradient-to-br from-red-400 to-red-600" : "bg-gradient-to-br from-blue-400 to-blue-600"}`}>
-                                    <div className="absolute inset-0 flex items-center justify-center text-white">
-                                        {project.type === "PDF" ? <FileText className="h-16 w-16 opacity-50" /> : <Presentation className="h-16 w-16 opacity-50" />}
-                                    </div>
-                                    <div className="absolute top-3 left-3">
-                                        <Badge variant={project.type === "PDF" ? "danger" : "info"} className="text-xs">
-                                            {project.type}
-                                        </Badge>
-                                    </div>
-                                    {/* Hover Actions */}
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                        <Button size="icon" variant="secondary" className="h-10 w-10">
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-                                        <Button size="icon" variant="secondary" className="h-10 w-10">
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
-                                        <Button size="icon" variant="secondary" className="h-10 w-10">
-                                            <Download className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                                <CardContent className="p-4">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium truncate">{project.name}</h3>
-                                            <div className="flex items-center gap-2 mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                                                <Clock className="h-3 w-3" />
-                                                <span>{formatDate(project.updatedAt)}</span>
-                                                <span>•</span>
-                                                <span>{project.pages} páginas</span>
+                {/* Projects Grid */}
+                {filteredProjects.length > 0 ? (
+                    viewMode === "grid" ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {filteredProjects.map((project) => (
+                                <Link key={project.id} href={`/dashboard/projects/${project.id}`}>
+                                    <Card className="group overflow-hidden hover:shadow-lg transition-all cursor-pointer">
+                                        <div className={`aspect-[16/9] relative ${project.type === "PDF" ? "bg-gradient-to-br from-red-400 to-red-600" : "bg-gradient-to-br from-[#dd6b44] to-[#c55a38]"} flex items-center justify-center`}>
+                                            {/* Mini Preview */}
+                                            <div className="absolute inset-2 bg-[#ecebe7] rounded-lg flex flex-col p-3">
+                                                <div className="flex items-center gap-1 mb-2">
+                                                    <div className="w-4 h-4 rounded-full bg-[#dd6b44]" />
+                                                    <span className="text-[6px] font-bold text-[#272727]">DOTLESS</span>
+                                                </div>
+                                                <div className="space-y-1 flex-1">
+                                                    <div className="h-2 bg-[#272727] rounded w-3/4" />
+                                                    <div className="h-1.5 bg-[#6c6d5e] rounded w-1/2 opacity-40" />
+                                                </div>
+                                                <div className="h-0.5 bg-[#dd6b44] -mx-3 -mb-3 mt-2" />
                                             </div>
-                                        </div>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                    <div className="mt-3">
-                                        {getStatusBadge(project.status)}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                ) : (
-                    <Card>
-                        <CardContent className="p-0">
-                            <div className="divide-y divide-[hsl(var(--border))]">
-                                {filteredProjects.map((project) => (
-                                    <div key={project.id} className="flex items-center gap-4 p-4 hover:bg-[hsl(var(--muted))] transition-colors">
-                                        <div className={`p-3 rounded-lg ${project.type === "PDF" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"}`}>
-                                            {project.type === "PDF" ? <FileText className="h-6 w-6" /> : <Presentation className="h-6 w-6" />}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium">{project.name}</h3>
-                                            <div className="flex items-center gap-2 mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-                                                <span>{project.pages} páginas</span>
-                                                <span>•</span>
-                                                <span>{formatDate(project.updatedAt)}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            {getStatusBadge(project.status)}
-                                            <div className="flex gap-1">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Copy className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-[hsl(var(--destructive))]">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
 
-                {/* Empty State */}
-                {filteredProjects.length === 0 && (
+                                            <div className="absolute top-2 left-2">
+                                                <Badge className="bg-white/90 text-[#272727] border-0 text-[10px]">
+                                                    {project.type}
+                                                </Badge>
+                                            </div>
+
+                                            {/* Hover Actions */}
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                <Button size="sm" variant="secondary">
+                                                    <Eye className="h-4 w-4 mr-1" />
+                                                    Abrir
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-medium truncate">{project.name}</h3>
+                                                    <div className="flex items-center gap-2 mt-2 text-sm text-[hsl(var(--muted-foreground))]">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span>{project.updatedAt}</span>
+                                                        <span>•</span>
+                                                        <span>{project.pages} slides</span>
+                                                    </div>
+                                                </div>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <div className="mt-3">
+                                                {getStatusBadge(project.status)}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <Card>
+                            <CardContent className="p-0">
+                                <div className="divide-y divide-[hsl(var(--border))]">
+                                    {filteredProjects.map((project) => (
+                                        <Link key={project.id} href={`/dashboard/projects/${project.id}`}>
+                                            <div className="flex items-center gap-4 p-4 hover:bg-[hsl(var(--muted))] transition-colors cursor-pointer">
+                                                <div className={`p-3 rounded-lg ${project.type === "PDF" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"}`}>
+                                                    {project.type === "PDF" ? <FileText className="h-6 w-6" /> : <Presentation className="h-6 w-6" />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-medium">{project.name}</h3>
+                                                    <div className="flex items-center gap-2 mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+                                                        <span>{project.pages} slides</span>
+                                                        <span>•</span>
+                                                        <span>{project.updatedAt}</span>
+                                                        <span>•</span>
+                                                        <span>{project.template}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    {getStatusBadge(project.status)}
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )
+                ) : (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                         <div className="p-4 rounded-full bg-[hsl(var(--muted))] mb-4">
-                            <FileText className="h-8 w-8 text-[hsl(var(--muted-foreground))]" />
+                            <Presentation className="h-8 w-8 text-[hsl(var(--muted-foreground))]" />
                         </div>
                         <h3 className="text-lg font-medium">Nenhum projeto encontrado</h3>
                         <p className="text-[hsl(var(--muted-foreground))] mt-1">
